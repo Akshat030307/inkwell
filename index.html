@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inkwell</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <header class="titlebar">
+    <div class="qat">
+      <button data-cmd="save" data-icon="save" title="Save (Ctrl+S)" aria-label="Save"></button>
+      <button data-cmd="undo" data-icon="undo" title="Undo (Ctrl+Z)" aria-label="Undo" id="undoBtn"></button>
+      <button data-cmd="redo" data-icon="redo" title="Redo (Ctrl+Y)" aria-label="Redo" id="redoBtn"></button>
+    </div>
+    <div class="doc-name">
+      <input id="docTitle" value="Document1" spellcheck="false" aria-label="Document name">
+      <span>&nbsp;- Inkwell</span>
+    </div>
+    <div class="save-state" id="saveState"></div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab file-tab" data-tab="file">FILE</button>
+    <button class="tab active" data-tab="home">HOME</button>
+    <button class="tab" data-tab="insert">INSERT</button>
+    <button class="tab" data-tab="layout">PAGE LAYOUT</button>
+    <button class="tab" data-tab="references">REFERENCES</button>
+    <button class="tab" data-tab="review">REVIEW</button>
+    <button class="tab" data-tab="view">VIEW</button>
+    <button class="tab contextual" data-tab="table" hidden>TABLE</button>
+    <button class="tab contextual" data-tab="picture" hidden>PICTURE</button>
+  </nav>
+
+  <section class="ribbon" aria-label="Ribbon">
+    <!-- HOME -->
+    <div class="panel active" data-panel="home">
+      <div class="group">
+        <div class="group-body">
+          <button data-cmd="paste" data-icon="paste" class="big" title="Paste (Ctrl+V)"><span>Paste</span></button>
+          <div class="stack">
+            <button data-cmd="cut" data-icon="cut" class="labeled" title="Cut (Ctrl+X)"><span>Cut</span></button>
+            <button data-cmd="copy" data-icon="copy" class="labeled" title="Copy (Ctrl+C)"><span>Copy</span></button>
+            <button data-cmd="formatPainter" data-icon="painter" class="labeled" id="painterBtn" title="Format Painter (double-click to keep it on)"><span>Format Painter</span></button>
+          </div>
+        </div>
+        <div class="group-label">Clipboard</div>
+      </div>
+
+      <div class="group">
+        <div class="group-body rows">
+          <div class="row">
+            <select id="fontName" title="Font" aria-label="Font">
+              <option>Calibri</option><option>Calibri Light</option><option>Cambria</option><option>Arial</option>
+              <option>Times New Roman</option><option>Georgia</option><option>Verdana</option>
+              <option>Trebuchet MS</option><option>Courier New</option><option>Comic Sans MS</option>
+            </select>
+            <select id="fontSize" title="Font Size" aria-label="Font size">
+              <option>8</option><option>9</option><option>10</option><option>10.5</option><option selected>11</option>
+              <option>12</option><option>14</option><option>16</option><option>18</option><option>20</option>
+              <option>22</option><option>24</option><option>26</option><option>28</option><option>36</option>
+              <option>48</option><option>72</option>
+            </select>
+            <button data-cmd="growFont" title="Grow Font (Ctrl+])" class="glyph">A<sup>+</sup></button>
+            <button data-cmd="shrinkFont" title="Shrink Font (Ctrl+[)" class="glyph">A<sup>−</sup></button>
+            <button data-menu="caseMenu" title="Change Case" class="glyph has-arrow">Aa</button>
+            <button data-cmd="clearFormat" data-icon="clear" title="Clear All Formatting (Ctrl+Space)"></button>
+          </div>
+          <div class="row">
+            <button data-cmd="bold" data-state="bold" title="Bold (Ctrl+B)" class="glyph"><b>B</b></button>
+            <button data-cmd="italic" data-state="italic" title="Italic (Ctrl+I)" class="glyph"><i>I</i></button>
+            <button data-cmd="underline" data-state="underline" title="Underline (Ctrl+U)" class="glyph"><u>U</u></button>
+            <button data-cmd="strikeThrough" data-state="strikeThrough" title="Strikethrough" class="glyph"><s>abc</s></button>
+            <button data-cmd="subscript" data-state="subscript" title="Subscript (Ctrl+=)" class="glyph">x<sub>2</sub></button>
+            <button data-cmd="superscript" data-state="superscript" title="Superscript (Ctrl+Shift+=)" class="glyph">x<sup>2</sup></button>
+            <span class="sep"></span>
+            <span class="split">
+              <button data-cmd="highlight" title="Text Highlight Color" class="glyph swatch-btn"><span class="hl-ab">ab</span><span class="swatch" id="hlSwatch"></span></button>
+              <button data-menu="highlightMenu" class="arrow" title="Highlight colors" aria-label="Highlight colors"></button>
+            </span>
+            <span class="split">
+              <button data-cmd="foreColor" title="Font Color" class="glyph swatch-btn"><span class="font-a">A</span><span class="swatch" id="foreSwatch"></span></button>
+              <button data-menu="foreMenu" class="arrow" title="Font colors" aria-label="Font colors"></button>
+            </span>
+          </div>
+        </div>
+        <div class="group-label">Font</div>
+      </div>
+
+      <div class="group">
+        <div class="group-body rows">
+          <div class="row">
+            <span class="split">
+              <button data-cmd="insertUnorderedList" data-state="insertUnorderedList" data-icon="bullets" title="Bullets"></button>
+              <button data-menu="bulletMenu" class="arrow" title="Bullet Library" aria-label="Bullet library"></button>
+            </span>
+            <span class="split">
+              <button data-cmd="insertOrderedList" data-state="insertOrderedList" data-icon="numbering" title="Numbering"></button>
+              <button data-menu="numberMenu" class="arrow" title="Numbering Library" aria-label="Numbering library"></button>
+            </span>
+            <button data-menu="multiMenu" data-icon="multilevel" title="Multilevel List" class="has-arrow"></button>
+            <button data-cmd="outdent" data-icon="outdent" title="Decrease Indent"></button>
+            <button data-cmd="indent" data-icon="indent" title="Increase Indent"></button>
+          </div>
+          <div class="row">
+            <button data-cmd="justifyLeft" data-state="justifyLeft" data-icon="alignLeft" title="Align Left (Ctrl+L)"></button>
+            <button data-cmd="justifyCenter" data-state="justifyCenter" data-icon="alignCenter" title="Center (Ctrl+E)"></button>
+            <button data-cmd="justifyRight" data-state="justifyRight" data-icon="alignRight" title="Align Right (Ctrl+R)"></button>
+            <button data-cmd="justifyFull" data-state="justifyFull" data-icon="justify" title="Justify (Ctrl+J)"></button>
+            <button data-menu="spacingMenu" data-icon="lineSpacing" title="Line and Paragraph Spacing" class="has-arrow"></button>
+            <span class="split">
+              <button data-cmd="shading" data-icon="shading" title="Shading"></button>
+              <button data-menu="shadingMenu" class="arrow" title="Shading colors" aria-label="Shading colors"></button>
+            </span>
+            <button data-menu="bordersMenu" data-icon="borders" title="Borders" class="has-arrow"></button>
+          </div>
+        </div>
+        <div class="group-label">Paragraph <button class="launcher" data-cmd="paragraphDialog" title="Paragraph Settings" aria-label="Paragraph settings"></button></div>
+      </div>
+
+      <div class="group">
+        <div class="group-body">
+          <div class="styles" id="styleGallery"></div>
+          <button data-menu="stylesMenu" class="styles-more" title="More styles" aria-label="Styles menu"></button>
+        </div>
+        <div class="group-label">Styles</div>
+      </div>
+
+      <div class="group">
+        <div class="group-body stack">
+          <button data-cmd="find" data-icon="find" class="labeled" title="Find (Ctrl+F)"><span>Find</span></button>
+          <button data-cmd="replace" data-icon="replace" class="labeled" title="Replace (Ctrl+H)"><span>Replace</span></button>
+          <button data-cmd="selectAll" data-icon="select" class="labeled" title="Select All (Ctrl+A)"><span>Select</span></button>
+        </div>
+        <div class="group-label">Editing</div>
+      </div>
+    </div>
+
+    <!-- INSERT -->
+    <div class="panel" data-panel="insert">
+      <div class="group">
+        <div class="group-body">
+          <button data-cmd="pageBreak" data-icon="pageBreak" class="big" title="Page Break (Ctrl+Enter)"><span>Page<br>Break</span></button>
+        </div>
+        <div class="group-label">Pages</div>
+      </div>
+      <div class="group">
+        <div class="group-body">
+          <button data-menu="tableMenu" data-icon="table" class="big has-arrow" title="Insert Table"><span>Table</span></button>
+        </div>
+        <div class="group-label">Tables</div>
+      </div>
+      <div class="group">
+        <div class="group-body">
+          <button data-cmd="picture" data-icon="picture" class="big" title="Insert Picture"><span>Pictures</span></button>
+        </div>
+        <div class="group-label">Illustrations</div>
+      </div>
+      <div class="group">
+        <div class="group-body">
+          <button data-cmd="link" data-icon="link" class="big" title="Hyperlink (Ctrl+K)"><span>Hyperlink</span></button>
+          <button data-cmd="newComment" data-icon="comment" class="big" title="New Comment"><span>Comment</span></button>
+        </div>
+        <div class="group-label">Links &amp; Comments</div>
+      </div>
+      <div class="group">
+        <div class="group-body">
+          <button data-menu="headerMenu" data-icon="header" class="big has-arrow" title="Header"><span>Header</span></button>
+          <button data-menu="footerMenu" data-icon="footer" class="big has-arrow" title="Footer"><span>Footer</span></button>
+          <button data-menu="pageNumMenu" data-icon="pageNumber" class="big has-arrow" title="Page Number"><span>Page<br>Number</span></button>
+        </div>
+        <div class="group-label">Header &amp; Footer</div>
+      </div>
+      <div class="group">
+        <div class="group-body">
+          <button data-cmd="dateTime" data-icon="date" class="big" title="Insert Date"><span>Date &amp;<br>Time</span></button>
+          <button data-cmd="hr" data-icon="hr" class="big" title="Horizontal Line"><span>Horizontal<br>Line</span></button>
+        </div>
+        <div class="group-label">Text</div>
+      </div>
+      <div class="group">
+        <div class="group-body">
+          <button data-menu="symbolMenu" data-icon="symbol" class="big has-arrow" title="Insert Symbol"><span>Symbol</span></button>
+        </div>
+        <div class="group-label">Symbols</div>
+      </div>
+    </div>
+
+    <!-- PAGE LAYOUT -->
+    <div class="panel" data-panel="layout">
+      <div class="group">
+        <div class="group-body">
+          <button data-menu="marginsMenu" data-icon="margins" class="big has-arrow" title="Margins"><span>Margins</span></button>
+          <button data-menu="orientMenu" data-icon="orientation" class="big has-arrow" title="Orientation"><span>Orientation</span></button>
+          <button data-menu="sizeMenu" data-icon="size" class="big has-arrow" title="Size"><span>Size</span></button>
+          <button data-menu="columnsMenu" data-icon="columns" class="big has-arrow" title="Columns"><span>Columns</span></button>
+          <button data-menu="breaksMenu" data-icon="breaks" class="big has-arrow" title="Breaks"><span>Breaks</span></button>
+        </div>
+        <div class="group-label">Page Setup</div>
+      </div>
+      <div class="group">
+        <div class="group-body layout-fields">
+          <span class="fl-head">Indent</span><span class="fl-head">Spacing</span>
+          <label>Left <input type="number" id="layIndL" step="0.1" min="0" max="6"><i>"</i></label>
+          <label>Before <input type="number" id="laySpB" step="1" min="0" max="200"><i>pt</i></label>
+          <label>Right <input type="number" id="layIndR" step="0.1" min="0" max="6"><i>"</i></label>
+          <label>After <input type="number" id="laySpA" step="1" min="0" max="200"><i>pt</i></label>
+        </div>
+        <div class="group-label">Paragraph <button class="launcher" data-cmd="paragraphDialog" title="Paragraph Settings" aria-label="Paragraph settings"></button></div>
+      </div>
+    </div>
+
+    <!-- REFERENCES -->
+    <div class="panel" data-panel="references">
+      <div class="group">
+        <div class="group-body">
+          <button data-menu="tocMenu" data-icon="toc" class="big has-arrow" title="Table of Contents"><span>Table of<br>Contents</span></button>
+          <button data-cmd="updateToc" data-icon="updateToc" class="labeled" title="Update Table"><span>Update Table</span></button>
+        </div>
+        <div class="group-label">Table of Contents</div>
+      </div>
+      <div class="group">
+        <div class="group-body">
+          <button data-cmd="insertCaption" data-icon="caption" class="big" title="Insert Caption"><span>Insert<br>Caption</span></button>
+        </div>
+        <div class="group-label">Captions</div>
+      </div>
+    </div>
+
+    <!-- REVIEW -->
+    <div class="panel" data-panel="review">
+      <div class="group">
+        <div class="group-body">
+          <button data-cmd="spelling" data-icon="spell" class="big" title="Toggle Spell Check"><span>Spelling</span></button>
+          <button data-cmd="wordCount" data-icon="count" class="big" title="Word Count"><span>Word<br>Count</span></button>
+        </div>
+        <div class="group-label">Proofing</div>
+      </div>
+      <div class="group">
+        <div class="group-body">
+          <button data-cmd="newComment" data-icon="comment" class="big" title="New Comment"><span>New<br>Comment</span></button>
+          <div class="stack">
+            <button data-cmd="deleteComment" data-icon="deleteComment" class="labeled" title="Delete Comment"><span>Delete</span></button>
+            <button data-cmd="prevComment" data-icon="prev" class="labeled" title="Previous Comment"><span>Previous</span></button>
+            <button data-cmd="nextComment" data-icon="next" class="labeled" title="Next Comment"><span>Next</span></button>
+          </div>
+          <button data-cmd="showComments" data-icon="showComments" class="big" id="showCommentsBtn" title="Show Comments"><span>Show<br>Comments</span></button>
+        </div>
+        <div class="group-label">Comments</div>
+      </div>
+      <div class="group">
+        <div class="group-body">
+          <button data-cmd="trackChanges" data-icon="track" class="big" id="trackBtn" title="Track Changes"><span>Track<br>Changes</span></button>
+          <button data-cmd="showMarkup" data-icon="markup" class="big" id="markupBtn" title="Show or hide tracked changes"><span>Show<br>Markup</span></button>
+        </div>
+        <div class="group-label">Tracking</div>
+      </div>
+      <div class="group">
+        <div class="group-body">
+          <button data-menu="acceptMenu" data-icon="accept" class="big has-arrow" title="Accept"><span>Accept</span></button>
+          <button data-menu="rejectMenu" data-icon="reject" class="big has-arrow" title="Reject"><span>Reject</span></button>
+          <div class="stack">
+            <button data-cmd="prevChange" data-icon="prev" class="labeled" title="Previous Change"><span>Previous</span></button>
+            <button data-cmd="nextChange" data-icon="next" class="labeled" title="Next Change"><span>Next</span></button>
+          </div>
+        </div>
+        <div class="group-label">Changes</div>
+      </div>
+    </div>
+
+    <!-- VIEW -->
+    <div class="panel" data-panel="view">
+      <div class="group">
+        <div class="group-body">
+          <button data-cmd="readMode" data-icon="readMode" class="big" title="Read Mode"><span>Read<br>Mode</span></button>
+          <button data-cmd="printLayout" data-icon="printLayout" class="big on" id="printLayoutBtn" title="Print Layout"><span>Print<br>Layout</span></button>
+        </div>
+        <div class="group-label">Views</div>
+      </div>
+      <div class="group">
+        <div class="group-body">
+          <button data-cmd="toggleRuler" data-icon="ruler" class="big" id="rulerBtn" title="Ruler"><span>Ruler</span></button>
+          <button data-cmd="navPane" data-icon="navPane" class="big" id="navBtn" title="Navigation Pane"><span>Navigation<br>Pane</span></button>
+        </div>
+        <div class="group-label">Show</div>
+      </div>
+      <div class="group">
+        <div class="group-body">
+          <button data-cmd="zoomOut" data-icon="zoomOut" class="big" title="Zoom Out"><span>Zoom<br>Out</span></button>
+          <button data-cmd="zoomIn" data-icon="zoomIn" class="big" title="Zoom In"><span>Zoom<br>In</span></button>
+          <button data-cmd="zoom100" data-icon="hundred" class="big" title="Zoom to 100%"><span>100%</span></button>
+          <button data-cmd="pageWidth" data-icon="pageWidth" class="big" title="Fit Page Width"><span>Page<br>Width</span></button>
+        </div>
+        <div class="group-label">Zoom</div>
+      </div>
+      <div class="group">
+        <div class="group-body">
+          <button data-cmd="darkMode" data-icon="dark" class="big" id="darkBtn" title="Dark Mode"><span>Dark<br>Mode</span></button>
+        </div>
+        <div class="group-label">Theme</div>
+      </div>
+    </div>
+
+    <!-- TABLE (contextual) -->
+    <div class="panel" data-panel="table">
+      <div class="group">
+        <div class="group-body">
+          <button data-cmd="rowAbove" data-icon="rowAbove" class="big" title="Insert Row Above"><span>Insert<br>Above</span></button>
+          <button data-cmd="rowBelow" data-icon="rowBelow" class="big" title="Insert Row Below"><span>Insert<br>Below</span></button>
+          <button data-cmd="colLeft" data-icon="colLeft" class="big" title="Insert Column Left"><span>Insert<br>Left</span></button>
+          <button data-cmd="colRight" data-icon="colRight" class="big" title="Insert Column Right"><span>Insert<br>Right</span></button>
+        </div>
+        <div class="group-label">Rows &amp; Columns</div>
+      </div>
+      <div class="group">
+        <div class="group-body">
+          <button data-cmd="deleteRow" data-icon="deleteRow" class="big" title="Delete Row"><span>Delete<br>Row</span></button>
+          <button data-cmd="deleteCol" data-icon="deleteCol" class="big" title="Delete Column"><span>Delete<br>Column</span></button>
+          <button data-cmd="deleteTable" data-icon="deleteTable" class="big" title="Delete Table"><span>Delete<br>Table</span></button>
+        </div>
+        <div class="group-label">Delete</div>
+      </div>
+    </div>
+
+    <!-- PICTURE (contextual) -->
+    <div class="panel" data-panel="picture">
+      <div class="group">
+        <div class="group-body">
+          <button data-menu="wrapMenu" data-icon="wrap" class="big has-arrow" title="Wrap Text"><span>Wrap<br>Text</span></button>
+          <div class="stack">
+            <button data-cmd="imgAlign" data-arg="left" data-icon="alignLeft" class="labeled" title="Align Left"><span>Align Left</span></button>
+            <button data-cmd="imgAlign" data-arg="center" data-icon="alignCenter" class="labeled" title="Center"><span>Center</span></button>
+            <button data-cmd="imgAlign" data-arg="right" data-icon="alignRight" class="labeled" title="Align Right"><span>Align Right</span></button>
+          </div>
+        </div>
+        <div class="group-label">Arrange</div>
+      </div>
+      <div class="group">
+        <div class="group-body">
+          <button data-menu="rotateMenu" data-icon="rotate" class="big has-arrow" title="Rotate"><span>Rotate</span></button>
+          <button data-cmd="cropImage" data-icon="crop" class="big" title="Crop"><span>Crop</span></button>
+          <button data-cmd="altText" data-icon="alt" class="big" title="Alt Text"><span>Alt<br>Text</span></button>
+          <button data-cmd="insertCaption" data-icon="caption" class="big" title="Insert Caption"><span>Caption</span></button>
+        </div>
+        <div class="group-label">Adjust</div>
+      </div>
+      <div class="group">
+        <div class="group-body layout-fields size-fields">
+          <label>Height <input type="number" id="imgH" step="0.05" min="0.1" max="20"><i>"</i></label>
+          <label>Width <input type="number" id="imgW" step="0.05" min="0.1" max="20"><i>"</i></label>
+          <button data-cmd="resetImage" data-icon="reset" class="labeled" title="Reset Size"><span>Reset Size</span></button>
+        </div>
+        <div class="group-label">Size</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="read-bar" id="readBar" hidden>
+    <strong id="readTitle"></strong>
+    <button class="btn" data-cmd="exitReadMode">Exit Read Mode</button>
+  </div>
+
+  <div class="main">
+    <aside class="find-pane" id="findPane" hidden>
+      <div class="find-head">
+        <strong>Navigation</strong>
+        <button data-cmd="closeFind" data-icon="close" title="Close" aria-label="Close"></button>
+      </div>
+      <input id="findInput" type="search" placeholder="Search document" aria-label="Search document">
+      <div class="nav-tabs">
+        <button data-navtab="headings" class="on">HEADINGS</button>
+        <button data-navtab="results">RESULTS</button>
+      </div>
+      <div data-navpanel="headings" id="navHeadings" class="nav-list"></div>
+      <div data-navpanel="results" hidden>
+        <div class="find-row">
+          <label><input type="checkbox" id="matchCase"> Match case</label>
+          <span id="findCount" class="muted"></span>
+        </div>
+        <div class="find-row">
+          <button data-cmd="findPrev" class="btn">◀ Previous</button>
+          <button data-cmd="findNext" class="btn">Next ▶</button>
+        </div>
+        <div id="replaceArea">
+          <input id="replaceInput" type="text" placeholder="Replace with" aria-label="Replace with">
+          <div class="find-row">
+            <button data-cmd="replaceOne" class="btn">Replace</button>
+            <button data-cmd="replaceAll" class="btn">Replace All</button>
+          </div>
+        </div>
+        <div id="navResults" class="nav-list"></div>
+      </div>
+    </aside>
+
+    <main class="workspace" id="workspace">
+      <div class="page-wrap" id="pageWrap">
+        <div class="ruler" id="ruler" hidden></div>
+        <div class="page-stack" id="pageStack">
+          <div class="sheets" id="sheets" aria-hidden="true"></div>
+          <article id="doc" class="doc page" contenteditable="true" spellcheck="true" aria-label="Document"></article>
+        </div>
+      </div>
+    </main>
+
+    <aside class="comments-pane" id="commentsPane" hidden>
+      <div class="find-head"><strong>Comments</strong></div>
+      <div id="commentList"></div>
+    </aside>
+  </div>
+
+  <footer class="statusbar">
+    <span id="stPage">PAGE 1 OF 1</span>
+    <span id="stWords">0 WORDS</span>
+    <span id="stTrack" hidden>TRACK CHANGES: ON</span>
+    <span class="grow"></span>
+    <button data-cmd="readMode" class="zbtn view-btn" title="Read Mode" aria-label="Read Mode">📖</button>
+    <button data-cmd="zoomOut" class="zbtn" title="Zoom Out">−</button>
+    <input type="range" id="zoomSlider" min="25" max="300" step="5" value="100" aria-label="Zoom">
+    <button data-cmd="zoomIn" class="zbtn" title="Zoom In">+</button>
+    <span id="stZoom" class="zoom-pct">100%</span>
+  </footer>
+
+  <!-- FILE backstage -->
+  <div class="backstage" id="backstage" hidden>
+    <nav class="bs-nav">
+      <button data-cmd="closeBackstage" class="bs-back" title="Back" aria-label="Back" data-icon="back"></button>
+      <button data-bs="info" class="active">Info</button>
+      <button data-bs="new">New</button>
+      <button data-bs="open">Open</button>
+      <button data-cmd="save">Save</button>
+      <button data-bs="export">Export</button>
+      <button data-cmd="print">Print</button>
+      <span class="bs-spacer"></span>
+      <button data-bs="options">Options</button>
+    </nav>
+    <div class="bs-body">
+      <section data-bs-panel="info">
+        <h1>Info</h1>
+        <h2 id="bsTitle">Document1</h2>
+        <dl class="props" id="bsProps"></dl>
+        <p class="muted">Inkwell saves your documents in this browser as you type. Use Save to download a .docx you can open in Microsoft Word, LibreOffice or Google Docs.</p>
+      </section>
+      <section data-bs-panel="new" hidden>
+        <h1>New</h1>
+        <div class="templates" id="templateList"></div>
+      </section>
+      <section data-bs-panel="open" hidden>
+        <h1>Open</h1>
+        <button data-cmd="open" class="card browse"><strong>Browse…</strong><span>Open a .docx, .html or .txt file from your computer</span></button>
+        <h2>Recent Documents</h2>
+        <div class="recent" id="recentList"></div>
+      </section>
+      <section data-bs-panel="export" hidden>
+        <h1>Export</h1>
+        <div class="cards">
+          <button data-cmd="save" class="card"><strong>Word Document</strong><span>.docx — opens in Word, LibreOffice and Google Docs</span></button>
+          <button data-cmd="exportPdf" class="card"><strong>PDF</strong><span>.pdf — one click, laid out page by page</span></button>
+          <button data-cmd="exportHtml" class="card"><strong>Web Page</strong><span>.html — a single self-contained file</span></button>
+          <button data-cmd="exportTxt" class="card"><strong>Plain Text</strong><span>.txt — text only, no formatting</span></button>
+        </div>
+      </section>
+      <section data-bs-panel="options" hidden>
+        <h1>Options</h1>
+        <form class="options" id="optionsForm">
+          <label class="opt-wide">User name <input type="text" name="author" maxlength="60"></label>
+          <fieldset>
+            <legend>AutoCorrect as you type</legend>
+            <label><input type="checkbox" name="quotes"> "Straight quotes" with “smart quotes”</label>
+            <label><input type="checkbox" name="symbols"> Dashes, ellipses, arrows and (c) (r) (tm) symbols</label>
+            <label><input type="checkbox" name="lists"> Automatic bulleted and numbered lists</label>
+            <label><input type="checkbox" name="links"> Internet addresses become hyperlinks</label>
+          </fieldset>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <!-- Dropdown menus -->
+  <div class="menu" id="foreMenu" hidden></div>
+  <div class="menu" id="highlightMenu" hidden></div>
+  <div class="menu" id="shadingMenu" hidden></div>
+  <div class="menu" id="caseMenu" hidden>
+    <button data-cmd="changeCase" data-arg="sentence">Sentence case.</button>
+    <button data-cmd="changeCase" data-arg="lower">lowercase</button>
+    <button data-cmd="changeCase" data-arg="upper">UPPERCASE</button>
+    <button data-cmd="changeCase" data-arg="title">Capitalize Each Word</button>
+    <button data-cmd="changeCase" data-arg="toggle">tOGGLE cASE</button>
+  </div>
+  <div class="menu" id="bulletMenu" hidden>
+    <div class="menu-title">Bullet Library</div>
+    <div class="glyph-grid">
+      <button data-cmd="listFormat" data-arg="ul:disc" title="Disc">●</button>
+      <button data-cmd="listFormat" data-arg="ul:circle" title="Circle">○</button>
+      <button data-cmd="listFormat" data-arg="ul:square" title="Square">■</button>
+      <button data-cmd="listFormat" data-arg="ul:check" title="Check mark">✓</button>
+      <button data-cmd="listFormat" data-arg="ul:arrow" title="Arrow">➢</button>
+      <button data-cmd="listFormat" data-arg="ul:dash" title="Dash">–</button>
+    </div>
+    <button data-cmd="listFormat" data-arg="none">None</button>
+  </div>
+  <div class="menu" id="numberMenu" hidden>
+    <div class="menu-title">Numbering Library</div>
+    <div class="glyph-grid numbers">
+      <button data-cmd="listFormat" data-arg="ol:decimal">1.<br>2.<br>3.</button>
+      <button data-cmd="listFormat" data-arg="ol:lower-alpha">a.<br>b.<br>c.</button>
+      <button data-cmd="listFormat" data-arg="ol:upper-alpha">A.<br>B.<br>C.</button>
+      <button data-cmd="listFormat" data-arg="ol:lower-roman">i.<br>ii.<br>iii.</button>
+      <button data-cmd="listFormat" data-arg="ol:upper-roman">I.<br>II.<br>III.</button>
+    </div>
+    <button data-cmd="listFormat" data-arg="none">None</button>
+  </div>
+  <div class="menu" id="multiMenu" hidden>
+    <div class="menu-title">List Library</div>
+    <button data-cmd="listFormat" data-arg="ol:decimal"><strong>1. a. i.</strong><span>Numbers, then letters, then roman numerals</span></button>
+    <button data-cmd="listFormat" data-arg="ol:legal"><strong>1. 1.1. 1.1.1.</strong><span>Legal-style outline numbering</span></button>
+    <button data-cmd="listFormat" data-arg="ul:disc"><strong>• ○ ▪</strong><span>Bullets at every level</span></button>
+  </div>
+  <div class="menu" id="bordersMenu" hidden>
+    <button data-cmd="border" data-arg="bottom">Bottom Border</button>
+    <button data-cmd="border" data-arg="top">Top Border</button>
+    <button data-cmd="border" data-arg="left">Left Border</button>
+    <button data-cmd="border" data-arg="right">Right Border</button>
+    <button data-cmd="border" data-arg="box">Outside Borders</button>
+    <button data-cmd="border" data-arg="none">No Border</button>
+  </div>
+  <div class="menu" id="stylesMenu" hidden>
+    <button data-cmd="createStyle"><strong>Create a Style…</strong><span>From the formatting of the current paragraph</span></button>
+    <button data-cmd="modifyStyle"><strong>Modify Style…</strong><span>Change the style of the current paragraph</span></button>
+    <button data-cmd="deleteStyle"><strong>Delete Style</strong><span>Remove the current custom style</span></button>
+    <button data-cmd="resetStyles"><strong>Reset Styles</strong><span>Restore Word 2013's built-in styles</span></button>
+  </div>
+  <div class="menu" id="spacingMenu" hidden>
+    <button data-cmd="lineSpacing" data-arg="1">1.0</button>
+    <button data-cmd="lineSpacing" data-arg="1.08">1.08 (default)</button>
+    <button data-cmd="lineSpacing" data-arg="1.15">1.15</button>
+    <button data-cmd="lineSpacing" data-arg="1.5">1.5</button>
+    <button data-cmd="lineSpacing" data-arg="2">2.0</button>
+    <button data-cmd="lineSpacing" data-arg="2.5">2.5</button>
+    <button data-cmd="lineSpacing" data-arg="3">3.0</button>
+    <button data-cmd="paragraphDialog">Line Spacing Options…</button>
+  </div>
+  <div class="menu" id="tableMenu" hidden>
+    <div class="menu-title" id="tableLabel">Insert Table</div>
+    <div class="table-grid" id="tableGrid"></div>
+  </div>
+  <div class="menu" id="symbolMenu" hidden><div class="symbol-grid" id="symbolGrid"></div></div>
+  <div class="menu" id="headerMenu" hidden>
+    <button data-cmd="editHF" data-arg="header"><strong>Edit Header…</strong><span>Text at the top of every page</span></button>
+    <button data-cmd="removeHF" data-arg="header"><strong>Remove Header</strong></button>
+  </div>
+  <div class="menu" id="footerMenu" hidden>
+    <button data-cmd="editHF" data-arg="footer"><strong>Edit Footer…</strong><span>Text at the bottom of every page</span></button>
+    <button data-cmd="removeHF" data-arg="footer"><strong>Remove Footer</strong></button>
+  </div>
+  <div class="menu" id="pageNumMenu" hidden>
+    <button data-cmd="pageNumbers" data-arg="top-right"><strong>Top of Page</strong><span>Plain number, right</span></button>
+    <button data-cmd="pageNumbers" data-arg="bottom-center"><strong>Bottom of Page</strong><span>Plain number, centered</span></button>
+    <button data-cmd="pageNumbers" data-arg="bottom-right"><strong>Bottom of Page</strong><span>Plain number, right</span></button>
+    <button data-cmd="pageNumbers" data-arg="bottom-xofy"><strong>Page X of Y</strong><span>Bottom of page, centered</span></button>
+    <button data-cmd="pageNumbers" data-arg="remove"><strong>Remove Page Numbers</strong></button>
+  </div>
+  <div class="menu" id="marginsMenu" hidden>
+    <button data-cmd="margins" data-arg="normal"><strong>Normal</strong><span>Top 1" Bottom 1" Left 1" Right 1"</span></button>
+    <button data-cmd="margins" data-arg="narrow"><strong>Narrow</strong><span>Top 0.5" Bottom 0.5" Left 0.5" Right 0.5"</span></button>
+    <button data-cmd="margins" data-arg="moderate"><strong>Moderate</strong><span>Top 1" Bottom 1" Left 0.75" Right 0.75"</span></button>
+    <button data-cmd="margins" data-arg="wide"><strong>Wide</strong><span>Top 1" Bottom 1" Left 2" Right 2"</span></button>
+  </div>
+  <div class="menu" id="orientMenu" hidden>
+    <button data-cmd="orientation" data-arg="portrait"><strong>Portrait</strong></button>
+    <button data-cmd="orientation" data-arg="landscape"><strong>Landscape</strong></button>
+  </div>
+  <div class="menu" id="sizeMenu" hidden>
+    <button data-cmd="pageSize" data-arg="letter"><strong>Letter</strong><span>8.5" × 11"</span></button>
+    <button data-cmd="pageSize" data-arg="legal"><strong>Legal</strong><span>8.5" × 14"</span></button>
+    <button data-cmd="pageSize" data-arg="a4"><strong>A4</strong><span>8.27" × 11.69"</span></button>
+    <button data-cmd="pageSize" data-arg="a5"><strong>A5</strong><span>5.83" × 8.27"</span></button>
+  </div>
+  <div class="menu" id="columnsMenu" hidden>
+    <button data-cmd="columns" data-arg="1"><strong>One</strong></button>
+    <button data-cmd="columns" data-arg="2"><strong>Two</strong></button>
+    <button data-cmd="columns" data-arg="3"><strong>Three</strong></button>
+  </div>
+  <div class="menu" id="breaksMenu" hidden>
+    <button data-cmd="pageBreak"><strong>Page</strong><span>Start the next text on a new page</span></button>
+    <button data-cmd="columnBreak"><strong>Column</strong><span>Start the next text in the next column</span></button>
+  </div>
+  <div class="menu" id="tocMenu" hidden>
+    <button data-cmd="insertToc"><strong>Automatic Table</strong><span>Built from Heading 1–3, with page numbers</span></button>
+    <button data-cmd="updateToc"><strong>Update Table</strong></button>
+    <button data-cmd="removeToc"><strong>Remove Table of Contents</strong></button>
+  </div>
+  <div class="menu" id="acceptMenu" hidden>
+    <button data-cmd="acceptChange"><strong>Accept This Change</strong></button>
+    <button data-cmd="acceptAll"><strong>Accept All Changes</strong></button>
+  </div>
+  <div class="menu" id="rejectMenu" hidden>
+    <button data-cmd="rejectChange"><strong>Reject This Change</strong></button>
+    <button data-cmd="rejectAll"><strong>Reject All Changes</strong></button>
+  </div>
+  <div class="menu" id="wrapMenu" hidden>
+    <button data-cmd="wrap" data-arg="inline"><strong>In Line with Text</strong></button>
+    <button data-cmd="wrap" data-arg="left"><strong>Square, Left</strong><span>Text flows on the right</span></button>
+    <button data-cmd="wrap" data-arg="right"><strong>Square, Right</strong><span>Text flows on the left</span></button>
+    <button data-cmd="wrap" data-arg="block"><strong>Top and Bottom</strong><span>Picture on its own line</span></button>
+  </div>
+  <div class="menu" id="rotateMenu" hidden>
+    <button data-cmd="rotateImage" data-arg="90"><strong>Rotate Right 90°</strong></button>
+    <button data-cmd="rotateImage" data-arg="-90"><strong>Rotate Left 90°</strong></button>
+    <button data-cmd="rotateImage" data-arg="flip"><strong>Flip Horizontal</strong></button>
+  </div>
+
+  <dialog id="dialog">
+    <form method="dialog" id="dialogForm">
+      <h3 id="dialogTitle"></h3>
+      <div id="dialogBody"></div>
+      <div class="dialog-actions">
+        <button value="ok" class="btn primary" id="dialogOk">OK</button>
+        <button value="cancel" class="btn" id="dialogCancel" formnovalidate>Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="img-handle" id="imgHandle" hidden></div>
+  <div class="toast" id="toast" hidden></div>
+  <input type="file" id="openFile" accept=".docx,.html,.htm,.txt,.md" hidden>
+  <input type="file" id="imageFile" accept="image/png,image/jpeg,image/gif,image/bmp" hidden>
+  <style id="printPage"></style>
+
+  <script src="vendor/jszip.min.js"></script>
+  <script src="js/docx.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/features/icons.js"></script>
+  <script src="js/features/styles.js"></script>
+  <script src="js/features/pages.js"></script>
+  <script src="js/features/paragraph.js"></script>
+  <script src="js/features/lists.js"></script>
+  <script src="js/features/autocorrect.js"></script>
+  <script src="js/features/navigation.js"></script>
+  <script src="js/features/sections.js"></script>
+  <script src="js/features/pictures.js"></script>
+  <script src="js/features/review.js"></script>
+  <script src="js/features/views.js"></script>
+  <script src="js/features/pdf.js"></script>
+  <script src="js/features/library.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

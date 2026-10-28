@@ -1,0 +1,9 @@
+# OS / editor clutter
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Local test output
+*.docx
+*.pdf
